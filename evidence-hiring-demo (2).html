@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Evidence-Based Hiring — Case File Demo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Lora:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --paper:#EDE6D6;
+  --paper-card:#F4EFE3;
+  --ink:#2B2A28;
+  --ink-soft:#6B675E;
+  --line:#C9BFA8;
+  --green:#3F6B4A;
+  --green-bg:#DFE9E0;
+  --amber:#9C6E1F;
+  --amber-bg:#F1E3C4;
+  --red:#A13328;
+  --red-bg:#F1DCD8;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Lora',serif;}
+.wrap{max-width:920px;margin:0 auto;padding:32px 24px 64px;}
+.filehead{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px double var(--ink);padding-bottom:10px;margin-bottom:16px;}
+.filehead h1{font-family:'Special Elite',monospace;font-size:20px;letter-spacing:1px;margin:0;font-weight:400;}
+.fileno{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);}
+
+.candidate-row{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.cbtn{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:10px 14px;background:var(--paper-card);border:1px solid var(--line);cursor:pointer;color:var(--ink-soft);flex:1;min-width:220px;text-align:left;}
+.cbtn.active{border-color:var(--ink);color:var(--ink);font-weight:500;}
+.cbtn .cname{display:block;font-family:'Special Elite',monospace;font-size:13px;margin-bottom:2px;}
+
+.subline{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);margin-bottom:20px;}
+
+.tabs{display:flex;gap:2px;margin-bottom:0;flex-wrap:wrap;}
+.tab{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:10px 14px;background:var(--line);color:var(--ink-soft);cursor:pointer;border-top-left-radius:6px;border-top-right-radius:6px;user-select:none;}
+.tab.active{background:var(--paper-card);color:var(--ink);font-weight:500;}
+.panelbox{background:var(--paper-card);border:1px solid var(--line);padding:28px;min-height:340px;}
+.panel{display:none;}
+.panel.active{display:block;}
+
+h2.step{font-family:'Special Elite',monospace;font-size:16px;margin:0 0 4px;font-weight:400;}
+.step-sub{font-size:13px;color:var(--ink-soft);margin:0 0 20px;font-style:italic;}
+
+.behavior-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-top:12px;}
+.behavior{border-left:3px solid var(--ink);padding:6px 12px;font-size:14px;}
+
+.evidence-card{background:#fff;border:1px solid var(--line);padding:14px 16px;margin-bottom:12px;}
+.evidence-quote{font-size:14px;line-height:1.55;}
+.evidence-tag{display:inline-block;margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;background:var(--green-bg);color:var(--green);border-radius:3px;}
+
+.claim-row{display:grid;grid-template-columns:2fr 1fr 1.3fr;gap:12px;padding:12px 0;border-bottom:1px dashed var(--line);align-items:start;font-size:13px;}
+.claim-row:last-child{border-bottom:none;}
+.claim-label{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--ink-soft);letter-spacing:.5px;margin-bottom:8px;}
+.status-strong{color:var(--green);font-weight:600;}
+.status-partial{color:var(--amber);font-weight:600;}
+.status-weak{color:var(--red);font-weight:600;}
+
+.gap-card{border:1px solid var(--line);padding:14px 16px;margin-bottom:14px;}
+.gap-card .gaptitle{font-family:'IBM Plex Mono',monospace;font-size:12px;margin-bottom:6px;}
+.gap-card ul{margin:8px 0 0;padding-left:18px;font-size:14px;}
+.gap-card.amber{background:var(--amber-bg);}
+.gap-card.amber .gaptitle{color:var(--amber);}
+.gap-card.gray{background:#fff;}
+.gap-card.gray .gaptitle{color:var(--ink-soft);}
+
+.verdict-wrap{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;}
+.stamp{font-family:'Special Elite',monospace;border:5px double var(--amber);color:var(--amber);padding:14px 20px;font-size:17px;text-align:center;transform:rotate(-6deg);letter-spacing:1px;white-space:nowrap;opacity:0;animation:stampin .5s ease-out .15s forwards;}
+.stamp.green{border-color:var(--green);color:var(--green);}
+.stamp.red{border-color:var(--red);color:var(--red);}
+@keyframes stampin{0%{opacity:0;transform:rotate(-6deg) scale(1.6);}70%{opacity:1;}100%{opacity:1;transform:rotate(-6deg) scale(1);}}
+.verdict-text{flex:1;min-width:260px;font-size:14px;line-height:1.6;}
+.qcard{background:#fff;border:1px solid var(--line);border-left:3px solid var(--ink);padding:12px 14px;margin-top:10px;font-size:14px;font-style:italic;}
+
+.redirect-box{border:1px solid var(--line);background:#fff;padding:16px 18px;margin-bottom:14px;}
+.redirect-box .rtitle{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--green);margin-bottom:8px;}
+.redirect-box.external .rtitle{color:var(--amber);}
+.skillpill{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 9px;background:var(--green-bg);color:var(--green);border-radius:3px;margin:2px 4px 2px 0;}
+
+.navbtns{display:flex;justify-content:space-between;margin-top:18px;}
+.navbtn{font-family:'IBM Plex Mono',monospace;font-size:12px;background:none;border:1px solid var(--ink);color:var(--ink);padding:8px 14px;cursor:pointer;}
+.navbtn:hover{background:var(--ink);color:var(--paper-card);}
+.navbtn:disabled{opacity:.3;cursor:default;}
+.navbtn:disabled:hover{background:none;color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="filehead">
+    <h1>Candidate evaluation file</h1>
+    <div class="fileno" id="fileno">FILE NO. 2026-0091</div>
+  </div>
+
+  <div class="candidate-row" id="candidateRow"></div>
+  <div class="subline" id="subline"></div>
+
+  <div class="tabs" id="tabs">
+    <div class="tab" data-step="1">1 — Understand role</div>
+    <div class="tab" data-step="2">2 — Read resume</div>
+    <div class="tab" data-step="3">3 — Evaluate evidence</div>
+    <div class="tab" data-step="4">4 — Context check</div>
+    <div class="tab" data-step="5">5 — Verdict</div>
+    <div class="tab" data-step="6">6 — Redirect</div>
+  </div>
+
+  <div class="panelbox" id="panelbox"></div>
+
+  <div class="navbtns">
+    <button class="navbtn" id="prevBtn">← Back</button>
+    <button class="navbtn" id="nextBtn">Next →</button>
+  </div>
+</div>
+
+<script>
+var ROLE = "Customer Success Manager, SaaS (remote)";
+var BEHAVIORS = [
+  "Own renewal &amp; retention conversations with customers",
+  "Resolve escalations calmly under time pressure",
+  "Partner cross-functionally to remove blockers",
+  "Build or improve support workflows and tooling adoption",
+  "Communicate clearly with customers and internal stakeholders"
+];
+
+var CANDIDATES = {
+  gap: {
+    label: "Candidate 1",
+    cname: "The career-gap candidate",
+    fileno: "FILE NO. 2026-0104",
+    name: "R. Menon",
+    evidence: [
+      {quote:"\"Set up a regional customer support desk from scratch, coordinating adoption across 5 branch offices.\"", tag:"cross-functional adoption / change management"},
+      {quote:"\"Converted 4 of 9 pending service renewals through direct customer follow-up.\"", tag:"renewal &amp; retention"},
+      {quote:"\"Handled 20-25 escalations daily across phone and email; maintained 82% satisfaction.\"", tag:"escalation handling under volume"}
+    ],
+    claims: [
+      {c:"Satisfaction score 82%, self-reported", e:"Quantified, self-reported", a:"Plausible — confirm method in interview", cls:"status-partial"},
+      {c:"4 of 9 renewals converted", e:"Specific, bounded numbers", a:"Strong — specificity signals credibility", cls:"status-strong"},
+      {c:"Adoption across 5 of 12 branches", e:"Honestly scoped, not overclaimed", a:"Strong — restraint is a credibility signal", cls:"status-strong"}
+    ],
+    contextTitle:"Career gap — question, don't reject",
+    contextSub:"An 18-month gap is a prompt for a question, not an automatic disqualifier.",
+    contextCards:[
+      {cls:"amber", title:"GAP — 18 MONTHS · disclosed as health recovery", items:["Does this affect availability today? No indication it does.","Any sign of disengagement from the field after returning? None found."]}
+    ],
+    verdictClass:"amber",
+    verdictLabel:"CAN BE<br>CONSIDERED",
+    verdictText:"Strong, specific evidence of escalation handling and renewal conversion. The disclosed gap shows no sign of skill decay. Recommend proceeding to interview with light validation of recent-role currency.",
+    questions:[
+      "\"Walk me through how you got five branches to adopt a new support process.\"",
+      "\"What helped you get back up to speed after your time away?\"",
+      "\"Of the renewals you converted, which one was hardest, and why?\""
+    ],
+    redirectShow:false
+  },
+  switcher: {
+    label: "Candidate 2",
+    cname: "The career-switcher",
+    fileno: "FILE NO. 2026-0117",
+    name: "A. Fernandes",
+    evidence: [
+      {quote:"\"Managed a classroom of 40 students, communicating regularly with parents on progress and concerns.\"", tag:"stakeholder communication"},
+      {quote:"\"Resolved conflicts between students and adapted lesson plans to individual learning needs.\"", tag:"conflict resolution / adaptability"},
+      {quote:"\"No prior experience with CRM systems, ticketing tools, or SaaS products.\"", tag:"no direct tooling evidence"}
+    ],
+    claims: [
+      {c:"8 years managing classroom relationships", e:"Real, but non-domain evidence", a:"Transferable, not domain-specific — can't confirm SaaS-context fit", cls:"status-partial"},
+      {c:"No CSAT, NPS, or retention metrics of any kind", e:"Absent — different field entirely", a:"Insufficient direct evidence for this opening", cls:"status-weak"}
+    ],
+    contextTitle:"Domain switch — question the leap, don't just reject it",
+    contextSub:"No career gap here — the issue is an industry switch, which needs a different set of questions.",
+    contextCards:[
+      {cls:"gray", title:"CONTEXT — FULL CAREER SWITCH, EDUCATION → SAAS SUPPORT", items:["Has the candidate done any bridge work — courses, projects, volunteering in tech support?","Is the target role itself entry-level enough to absorb a full domain switch?"]}
+    ],
+    verdictClass:"red",
+    verdictLabel:"NOT SUITABLE<br>(THIS ROLE)",
+    verdictText:"Genuine, transferable soft skills, but this specific opening needs hands-on SaaS/CRM experience this candidate doesn't have yet. Rather than a flat rejection, the extracted skill evidence still routes forward — see Redirect.",
+    questions:[],
+    redirectShow:true,
+    redirectInternal:"Flag profile to: <strong>Junior Customer Support Associate</strong> — same company, entry point role that doesn't require prior SaaS tenure.",
+    redirectExternal:"Suggest role category: <strong>\"Customer-facing roles in ed-tech\"</strong> — combines the candidate's real teaching background with a customer-support entry point."
+  },
+  overqualified: {
+    label: "Candidate 3",
+    cname: "The overqualified candidate",
+    fileno: "FILE NO. 2026-0129",
+    name: "V. Krishnan",
+    evidence: [
+      {quote:"\"Led a 200-person global customer experience organization, reporting directly to the board.\"", tag:"large-scale leadership"},
+      {quote:"\"Owned a $40M CX budget and full P&amp;L for the support function.\"", tag:"budget / P&amp;L ownership"},
+      {quote:"\"Applying for an individual-contributor Customer Success Manager role.\"", tag:"seniority mismatch with opening"}
+    ],
+    claims: [
+      {c:"200-person org, board-level reporting", e:"Verifiable at reference-check stage", a:"Strong — but far exceeds this role's scope", cls:"status-strong"},
+      {c:"Applying for a role several levels below prior seniority", e:"Explicit in application", a:"Real risk: motivation and retention need direct validation", cls:"status-partial"}
+    ],
+    contextTitle:"Seniority mismatch — validate motivation, don't auto-reject",
+    contextSub:"\"Overqualified\" is often used as a silent rejection reason. Here it becomes a direct question instead.",
+    contextCards:[
+      {cls:"gray", title:"CONTEXT — 18 YEARS SENIORITY ABOVE THIS OPENING", items:["Why interest in a role with less scope than recent experience?","Are compensation expectations realistic for this level?","What's the flight risk once a more senior opening appears elsewhere?"]}
+    ],
+    verdictClass:"green",
+    verdictLabel:"INTERVIEW",
+    verdictText:"Evidence of capability is exceptionally strong — the only open question is motivation and fit, not skill. Recommend interviewing specifically to validate why this candidate wants this scope right now, rather than screening out on seniority alone.",
+    questions:[
+      "\"What's drawing you to a more hands-on role after leading at this scale?\"",
+      "\"How do you see yourself six months into a role with a narrower scope?\"",
+      "\"What would make this the right move for you, beyond timing?\""
+    ],
+    redirectShow:true,
+    redirectInternal:"If not selected for this specific opening: flag profile to any open <strong>Team Lead / Manager, Customer Success</strong> role internally — closer match to recent scope.",
+    redirectExternal:"Suggest role category: <strong>\"Customer Success Director / VP\"</strong> openings — where recent experience is a direct match rather than a mismatch."
+  }
+};
+
+var currentCandidate = 'gap';
+var current = 1;
+var total = 6;
+
+function buildCandidateRow(){
+  var row = document.getElementById('candidateRow');
+  row.innerHTML = '';
+  Object.keys(CANDIDATES).forEach(function(key){
+    var c = CANDIDATES[key];
+    var btn = document.createElement('div');
+    btn.className = 'cbtn' + (key === currentCandidate ? ' active' : '');
+    btn.innerHTML = '<span class="cname">' + c.label + '</span>' + c.cname;
+    btn.addEventListener('click', function(){ currentCandidate = key; current = 1; renderAll(); });
+    row.appendChild(btn);
+  });
+}
+
+function panelHTML(c){
+  var behaviorsHTML = BEHAVIORS.map(function(b){ return '<div class="behavior">' + b + '</div>'; }).join('');
+  var evidenceHTML = c.evidence.map(function(e){
+    return '<div class="evidence-card"><div class="evidence-quote">' + e.quote + '</div><span class="evidence-tag">&rarr; ' + e.tag + '</span></div>';
+  }).join('');
+  var claimsHTML = c.claims.map(function(cl){
+    return '<div class="claim-row"><div><div class="claim-label">Claim</div>' + cl.c + '</div><div><div class="claim-label">Evidence type</div>' + cl.e + '</div><div><div class="claim-label">Assessment</div><span class="' + cl.cls + '">' + cl.a + '</span></div></div>';
+  }).join('');
+  var contextHTML = c.contextCards.map(function(g){
+    return '<div class="gap-card ' + g.cls + '"><div class="gaptitle">' + g.title + '</div><ul>' + g.items.map(function(i){return '<li>'+i+'</li>';}).join('') + '</ul></div>';
+  }).join('');
+  var questionsHTML = c.questions.map(function(q){ return '<div class="qcard">' + q + '</div>'; }).join('');
+
+  var redirectPanel;
+  if(c.redirectShow){
+    redirectPanel =
+      '<h2 class="step">Redirect — a rejection doesn\'t have to be a dead end</h2>' +
+      '<p class="step-sub">Same evidence extraction from Step 2-3, now routed toward a better fit.</p>' +
+      '<div class="redirect-box"><div class="rtitle">Internal redirect</div>' + c.redirectInternal + '</div>' +
+      '<div class="redirect-box external"><div class="rtitle">External suggestion</div>' + c.redirectExternal + '</div>';
+  } else {
+    redirectPanel =
+      '<h2 class="step">Redirect — not triggered</h2>' +
+      '<p class="step-sub">This candidate was already a direct fit for the applied role, so no redirect was needed.</p>' +
+      '<div class="redirect-box"><div class="rtitle">Status</div>Evidence supported proceeding directly to interview for the role applied to — see Step 5.</div>';
+  }
+
+  return [
+    '<div class="panel active" data-panel="1"><h2 class="step">What does this role actually require?</h2><p class="step-sub">Not keywords — behaviors and outcomes the job depends on.</p><div class="behavior-grid">' + behaviorsHTML + '</div></div>',
+    '<div class="panel" data-panel="2"><h2 class="step">Reading the resume for behavior, not keywords</h2><p class="step-sub">Each line is read for what it demonstrates, not whether it contains the job title.</p>' + evidenceHTML + '</div>',
+    '<div class="panel" data-panel="3"><h2 class="step">Evaluating the evidence, not the keyword</h2><p class="step-sub">The question isn\'t "does the keyword appear" — it\'s "where is the proof."</p>' + claimsHTML + '</div>',
+    '<div class="panel" data-panel="4"><h2 class="step">' + c.contextTitle + '</h2><p class="step-sub">' + c.contextSub + '</p>' + contextHTML + '</div>',
+    '<div class="panel" data-panel="5"><h2 class="step">Verdict — with reasoning, not just a decision</h2><p class="step-sub">Every outcome comes with what to validate, not a silent rejection.</p>' +
+      '<div class="verdict-wrap"><div class="stamp ' + c.verdictClass + '">' + c.verdictLabel + '</div><div class="verdict-text">' + c.verdictText + '</div></div>' +
+      (questionsHTML ? '<div style="margin-top:20px;"><div class="claim-label">Interview questions generated from this file</div>' + questionsHTML + '</div>' : '') +
+      '</div>',
+    '<div class="panel" data-panel="6">' + redirectPanel + '</div>'
+  ].join('');
+}
+
+function renderAll(){
+  buildCandidateRow();
+  var c = CANDIDATES[currentCandidate];
+  document.getElementById('fileno').textContent = c.fileno;
+  document.getElementById('subline').textContent = 'Role: ' + ROLE + '  ·  Candidate: ' + c.name + '  ·  Method: evidence-based review, not keyword match';
+  document.getElementById('panelbox').innerHTML = panelHTML(c);
+  render();
+}
+
+function render(){
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.classList.toggle('active', Number(t.dataset.step) === current);
+  });
+  document.querySelectorAll('.panel').forEach(function(p){
+    p.classList.toggle('active', Number(p.dataset.panel) === current);
+  });
+  document.getElementById('prevBtn').disabled = current === 1;
+  document.getElementById('nextBtn').disabled = current === total;
+  if(current === 5){
+    var stamp = document.querySelector('.stamp');
+    if(stamp){
+      stamp.style.animation = 'none';
+      void stamp.offsetWidth;
+      stamp.style.animation = 'stampin .5s ease-out .05s forwards';
+    }
+  }
+}
+
+document.getElementById('tabs').addEventListener('click', function(e){
+  var t = e.target.closest('.tab');
+  if(!t) return;
+  current = Number(t.dataset.step);
+  render();
+});
+document.getElementById('prevBtn').addEventListener('click', function(){ if(current>1){current--;render();} });
+document.getElementById('nextBtn').addEventListener('click', function(){ if(current<total){current++;render();} });
+
+renderAll();
+</script>
+</body>
+</html>
