@@ -6,7 +6,7 @@
 
 ## Prototype Preview
 
-![Case File UI](prototype-preview.png)
+![Case File UI](prototype1-preview.png)
 
 Modern hiring has become increasingly optimized for speed.
 
