@@ -4,6 +4,10 @@
 
 ## Why this project?
 
+## Prototype Preview
+
+![Case File UI](prototype-preview.png)
+
 Modern hiring has become increasingly optimized for speed.
 
 ATS platforms and AI tools help recruiters process thousands of resumes, but they often rely heavily on keywords, job titles, and rigid filters.
