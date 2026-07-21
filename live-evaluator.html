@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Evidence-Based Hiring — Live Evaluator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Lora:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --paper:#EDE6D6; --paper-card:#F4EFE3; --ink:#2B2A28; --ink-soft:#6B675E;
+  --line:#C9BFA8; --green:#3F6B4A; --green-bg:#DFE9E0;
+  --amber:#9C6E1F; --amber-bg:#F1E3C4; --red:#A13328; --red-bg:#F1DCD8;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Lora',serif;}
+.wrap{max-width:960px;margin:0 auto;padding:32px 24px 64px;}
+.filehead{border-bottom:3px double var(--ink);padding-bottom:12px;margin-bottom:6px;}
+.filehead h1{font-family:'Special Elite',monospace;font-size:22px;margin:0;font-weight:400;}
+.filehead .sub{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);margin-top:4px;}
+.pipeline-note{font-family:'IBM Plex Mono',monospace;font-size:11px;background:#fff;border:1px solid var(--line);border-left:3px solid var(--ink);padding:10px 14px;margin:18px 0;color:var(--ink-soft);}
+.pipeline-note b{color:var(--ink);}
+
+.inputgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;}
+.inputbox label{font-family:'IBM Plex Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-soft);display:block;margin-bottom:6px;}
+.inputbox textarea{width:100%;height:220px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:12px;font-family:'IBM Plex Mono',monospace;font-size:13px;resize:vertical;color:var(--ink);}
+.inputbox textarea:focus{outline:2px solid var(--ink);}
+
+.evalbtn{margin-top:18px;font-family:'IBM Plex Mono',monospace;font-size:14px;background:var(--ink);color:var(--paper-card);border:none;padding:12px 24px;border-radius:6px;cursor:pointer;}
+.evalbtn:hover{background:#454339;}
+.evalbtn:disabled{opacity:.5;cursor:default;}
+.errbox{margin-top:14px;background:var(--red-bg);border:1px solid var(--red);color:var(--red);padding:12px 16px;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:13px;display:none;}
+.loadingbox{margin-top:20px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink-soft);display:none;}
+
+.resultbox{display:none;margin-top:30px;}
+.tabs{display:flex;gap:2px;flex-wrap:wrap;}
+.tab{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:9px 13px;background:var(--line);color:var(--ink-soft);cursor:pointer;border-top-left-radius:6px;border-top-right-radius:6px;}
+.tab.active{background:var(--paper-card);color:var(--ink);font-weight:500;}
+.panelbox{background:var(--paper-card);border:1px solid var(--line);padding:26px;min-height:280px;}
+.panel{display:none;}
+.panel.active{display:block;}
+h2.step{font-family:'Special Elite',monospace;font-size:16px;margin:0 0 4px;font-weight:400;}
+.step-sub{font-size:13px;color:var(--ink-soft);margin:0 0 18px;font-style:italic;}
+.behavior-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-top:10px;}
+.behavior{border-left:3px solid var(--ink);padding:6px 12px;font-size:14px;}
+.evidence-card{background:#fff;border:1px solid var(--line);padding:14px 16px;margin-bottom:12px;}
+.evidence-tag{display:inline-block;margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;background:var(--green-bg);color:var(--green);border-radius:3px;}
+.density-block{background:#fff;border:1px solid var(--line);padding:16px 18px;margin-bottom:18px;}
+.density-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+.density-label{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;color:var(--ink-soft);}
+.density-score{font-family:'Special Elite',monospace;font-size:22px;}
+.density-bar-track{background:var(--paper);border:1px solid var(--line);height:14px;border-radius:2px;overflow:hidden;}
+.density-bar-fill{height:100%;background:var(--ink);}
+.density-counts{display:flex;gap:18px;margin-top:10px;font-size:12px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;}
+.claim-row{display:grid;grid-template-columns:2fr 1fr 1.3fr;gap:12px;padding:12px 0;border-bottom:1px dashed var(--line);font-size:13px;}
+.claim-label{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;}
+.status-strong{color:var(--green);font-weight:600;}
+.status-partial{color:var(--amber);font-weight:600;}
+.status-weak{color:var(--red);font-weight:600;}
+.gap-card{border:1px solid var(--line);padding:14px 16px;margin-bottom:14px;}
+.gap-card .gaptitle{font-family:'IBM Plex Mono',monospace;font-size:12px;margin-bottom:6px;}
+.gap-card ul{margin:8px 0 0;padding-left:18px;font-size:14px;}
+.gap-card.amber{background:var(--amber-bg);}
+.gap-card.amber .gaptitle{color:var(--amber);}
+.gap-card.gray{background:#fff;}
+.verdict-wrap{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;}
+.stamp{font-family:'Special Elite',monospace;border:5px double var(--amber);color:var(--amber);padding:14px 20px;font-size:17px;text-align:center;transform:rotate(-6deg);white-space:nowrap;}
+.stamp.green{border-color:var(--green);color:var(--green);}
+.stamp.red{border-color:var(--red);color:var(--red);}
+.stamp.invalid{border-color:var(--ink-soft);color:var(--ink-soft);}
+.verdict-text{flex:1;min-width:240px;font-size:14px;line-height:1.6;}
+.qcard{background:#fff;border:1px solid var(--line);border-left:3px solid var(--ink);padding:12px 14px;margin-top:10px;font-size:14px;font-style:italic;}
+.redirect-box{border:1px solid var(--line);background:#fff;padding:16px 18px;margin-bottom:14px;}
+.redirect-box .rtitle{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;color:var(--green);margin-bottom:8px;}
+.redirect-box.external .rtitle{color:var(--amber);}
+.navbtns{display:flex;justify-content:space-between;margin-top:16px;}
+.navbtn{font-family:'IBM Plex Mono',monospace;font-size:12px;background:none;border:1px solid var(--ink);color:var(--ink);padding:7px 13px;cursor:pointer;}
+.navbtn:disabled{opacity:.3;}
+.disclaimer{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin-top:16px;border-top:1px solid var(--line);padding-top:12px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="filehead">
+    <h1>Evidence-Based Hiring — Live Evaluator</h1>
+    <div class="sub">Paste a real job description and a real resume. This one actually reasons.</div>
+  </div>
+  <div class="pipeline-note"><b>Live, not scripted.</b> Parts 1 &amp; 2 used fixed examples to show the concept. This calls a real model to evaluate whatever you paste in — no hardcoded outcomes.</div>
+
+  <div class="inputgrid">
+    <div class="inputbox">
+      <label>Job Description</label>
+      <textarea id="jdInput" placeholder="Paste the job description here..."></textarea>
+    </div>
+    <div class="inputbox">
+      <label>Candidate Resume / Profile</label>
+      <textarea id="resumeInput" placeholder="Paste the candidate's resume or profile here..."></textarea>
+    </div>
+  </div>
+
+  <button class="evalbtn" id="evalBtn">Evaluate against evidence, not keywords</button>
+  <div class="errbox" id="errBox"></div>
+  <div class="loadingbox" id="loadingBox">Reading for behavior, not job titles...</div>
+
+  <div class="resultbox" id="resultBox">
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-step="1">1 — Role</div>
+      <div class="tab" data-step="2">2 — Resume</div>
+      <div class="tab" data-step="3">3 — Evidence</div>
+      <div class="tab" data-step="4">4 — Context</div>
+      <div class="tab" data-step="5">5 — Verdict</div>
+      <div class="tab" data-step="6">6 — Redirect</div>
+    </div>
+    <div class="panelbox" id="panelbox"></div>
+    <div class="navbtns">
+      <button class="navbtn" id="prevBtn">← Back</button>
+      <button class="navbtn" id="nextBtn">Next →</button>
+    </div>
+    <div class="disclaimer">AI-generated evaluation. Flags claims for human verification — it does not confirm they are true, only how specific and internally consistent they read. Always validate in an actual interview.</div>
+  </div>
+</div>
+
+<script>
+var current = 1;
+var total = 6;
+var resultData = null;
+
+function render(){
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', Number(t.dataset.step) === current); });
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.toggle('active', Number(p.dataset.panel) === current); });
+  document.getElementById('prevBtn').disabled = current === 1;
+  document.getElementById('nextBtn').disabled = current === total;
+}
+
+document.getElementById('tabs').addEventListener('click', function(e){
+  var t = e.target.closest('.tab');
+  if(!t) return;
+  current = Number(t.dataset.step);
+  render();
+});
+document.getElementById('prevBtn').addEventListener('click', function(){ if(current>1){current--;render();} });
+document.getElementById('nextBtn').addEventListener('click', function(){ if(current<total){current++;render();} });
+
+function esc(s){
+  if(!s) return '';
+  var d = document.createElement('div');
+  d.innerText = s;
+  return d.innerHTML;
+}
+
+function panelHTML(d){
+  var behaviorsHTML = (d.role_behaviors||[]).map(function(b){ return '<div class="behavior">'+esc(b)+'</div>'; }).join('');
+  var evidenceHTML = (d.evidence||[]).map(function(e){
+    return '<div class="evidence-card"><div>"'+esc(e.quote)+'"</div><span class="evidence-tag">&rarr; '+esc(e.tag)+'</span></div>';
+  }).join('');
+  var dens = d.density || {achievements:0,measurable:0,bounded:0,score:0};
+  var densityHTML = '<div class="density-block"><div class="density-top"><span class="density-label">Evidence density</span><span class="density-score">'+dens.score+'%</span></div>'+
+    '<div class="density-bar-track"><div class="density-bar-fill" style="width:'+dens.score+'%"></div></div>'+
+    '<div class="density-counts"><span>'+dens.achievements+' achievements logged</span><span>'+dens.measurable+' measurable</span><span>'+dens.bounded+' verifiable / bounded</span></div></div>';
+  var claimsHTML = (d.claims||[]).map(function(c){
+    return '<div class="claim-row"><div><div class="claim-label">Claim</div>'+esc(c.c)+'</div><div><div class="claim-label">Evidence type</div>'+esc(c.e)+'</div><div><div class="claim-label">Assessment</div><span class="'+esc(c.cls)+'">'+esc(c.a)+'</span></div></div>';
+  }).join('');
+  var ctx = d.context || {title:'Context check',sub:'',cards:[]};
+  var contextCardsHTML = (ctx.cards||[]).map(function(g){
+    return '<div class="gap-card '+esc(g.cls)+'"><div class="gaptitle">'+esc(g.title)+'</div><ul>'+(g.items||[]).map(function(i){return '<li>'+esc(i)+'</li>';}).join('')+'</ul></div>';
+  }).join('');
+  var v = d.verdict || {class:'amber',label:'REVIEW',text:''};
+  var questionsHTML = (d.questions||[]).map(function(q){ return '<div class="qcard">"'+esc(q)+'"</div>'; }).join('');
+  var rd = d.redirect || {show:false};
+  var redirectPanel;
+  if(rd.show){
+    redirectPanel = '<h2 class="step">Redirect</h2><p class="step-sub">Same evidence, routed toward a better fit.</p>'+
+      '<div class="redirect-box"><div class="rtitle">Internal redirect</div>'+esc(rd.internal)+'</div>'+
+      '<div class="redirect-box external"><div class="rtitle">External suggestion</div>'+esc(rd.external)+'</div>';
+  } else if(v.class === 'invalid'){
+    redirectPanel = '<h2 class="step">Redirect — not applicable</h2><p class="step-sub">No real candidate resume was evaluated, so there is no evidence to redirect anywhere.</p>';
+  } else {
+    redirectPanel = '<h2 class="step">Redirect — not triggered</h2><p class="step-sub">This candidate was already a direct fit for the role evaluated.</p>';
+  }
+
+  return [
+    '<div class="panel active" data-panel="1"><h2 class="step">What this role actually requires</h2><p class="step-sub">Behaviors extracted from the job description, not a keyword list.</p><div class="behavior-grid">'+behaviorsHTML+'</div></div>',
+    '<div class="panel" data-panel="2"><h2 class="step">Reading the resume for behavior</h2><p class="step-sub">Each line read for what it demonstrates.</p>'+evidenceHTML+'</div>',
+    '<div class="panel" data-panel="3"><h2 class="step">Evaluating the evidence</h2><p class="step-sub">Specific beats vague.</p>'+densityHTML+claimsHTML+'</div>',
+    '<div class="panel" data-panel="4"><h2 class="step">'+esc(ctx.title)+'</h2><p class="step-sub">'+esc(ctx.sub)+'</p>'+contextCardsHTML+'</div>',
+    '<div class="panel" data-panel="5"><h2 class="step">Verdict — with reasoning</h2><p class="step-sub">Every outcome comes with what to validate.</p>'+
+      '<div class="verdict-wrap"><div class="stamp '+esc(v.class)+'">'+esc(v.label)+'</div><div class="verdict-text">'+esc(v.text)+'</div></div>'+
+      (questionsHTML ? '<div style="margin-top:18px;"><div class="claim-label">Interview questions generated</div>'+questionsHTML+'</div>' : '')+
+      '</div>',
+    '<div class="panel" data-panel="6">'+redirectPanel+'</div>'
+  ].join('');
+}
+
+var SYSTEM_PROMPT = "You are the reasoning engine behind 'Evidence-Based Hiring', a hiring evaluation philosophy: don't reward hope, reward evidence. Given a job description and a candidate resume, evaluate the candidate the way a thoughtful, fair human reviewer would - reading for demonstrated behavior, not keyword matches. Never auto-reject for career gaps, unconventional titles, or seniority mismatches - always ask a question instead. You must respond with ONLY valid JSON, no markdown fences, no preamble, matching exactly this schema: {\"role_behaviors\": [5 short strings describing behaviors/outcomes the role needs], \"evidence\": [{\"quote\": \"a real short quote or close paraphrase from the resume\", \"tag\": \"what behavior this demonstrates\"} - 3 to 5 items], \"density\": {\"achievements\": integer, \"measurable\": integer, \"bounded\": integer, \"score\": integer 0-100}, \"claims\": [{\"c\": \"the claim\", \"e\": \"evidence type description\", \"a\": \"assessment text\", \"cls\": one of \"status-strong\",\"status-partial\",\"status-weak\"} - 3 to 4 items], \"context\": {\"title\": \"short heading for this candidate's context issue (gap/switch/seniority/none)\", \"sub\": \"one line subtitle\", \"cards\": [{\"cls\": \"amber\" or \"gray\", \"title\": \"short label\", \"items\": [2-3 question strings]}]}, \"verdict\": {\"class\": \"green\" or \"amber\" or \"red\" or \"invalid\", \"label\": \"short verdict like INTERVIEW or CAN BE CONSIDERED or NOT SUITABLE (THIS ROLE) or CANNOT EVALUATE\", \"text\": \"2-3 sentence reasoning\"}, \"questions\": [3-4 specific interview question strings generated from THIS resume's actual content, or empty array if verdict is red or invalid], \"redirect\": {\"show\": boolean, \"internal\": \"suggestion text or empty\", \"external\": \"suggestion text or empty\"} - only show=true if verdict is red or the fit is weak AND real candidate resume content was actually provided}. IMPORTANT - redirect scope: the internal and external redirects must follow the strongest evidence in the resume, even if that evidence points to a completely different function than the one being screened for (e.g. a software engineer with zero customer-facing evidence should be redirected toward Engineering/Development roles, not toward a hybrid customer-facing-with-technical-flavor role invented to stay adjacent to the original search). Do not default to a role that merely sounds related to the JD's function just to soften the mismatch - name the function the evidence actually supports, even if it has nothing to do with the original role. IMPORTANT - invalid input handling: if the text pasted into the candidate resume field is not actually a resume (e.g. it is itself a job description, blank, gibberish, or unrelated document), you MUST set verdict.class to \"invalid\", verdict.label to \"CANNOT EVALUATE\", explain what was wrong in verdict.text, set questions to an empty array, and set redirect.show to false with empty internal/external strings - do NOT invent a redirect suggestion from job-description text, since there is no real candidate evidence to redirect anywhere. Every other field (role_behaviors, evidence, density, claims, context) should also reflect the absence of real candidate data rather than fabricating plausible-sounding content. Be specific and use real details from the resume provided, not generic placeholders.";
+
+document.getElementById('evalBtn').addEventListener('click', function(){
+  var jd = document.getElementById('jdInput').value.trim();
+  var resume = document.getElementById('resumeInput').value.trim();
+  var errBox = document.getElementById('errBox');
+  var loadingBox = document.getElementById('loadingBox');
+  var resultBox = document.getElementById('resultBox');
+  errBox.style.display = 'none';
+  resultBox.style.display = 'none';
+
+  if(!jd || !resume){
+    errBox.textContent = 'Please paste both a job description and a resume before evaluating.';
+    errBox.style.display = 'block';
+    return;
+  }
+
+  loadingBox.style.display = 'block';
+  document.getElementById('evalBtn').disabled = true;
+
+  var userMsg = "JOB DESCRIPTION:\\n" + jd + "\\n\\nCANDIDATE RESUME:\\n" + resume;
+
+  fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 4000,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: "user", content: userMsg }]
+    })
+  })
+  .then(function(res){ return res.json(); })
+  .then(function(data){
+    loadingBox.style.display = 'none';
+    document.getElementById('evalBtn').disabled = false;
+
+    if(data.error){
+      console.error('API error:', data.error);
+      errBox.textContent = 'The evaluator API returned an error: ' + (data.error.message || data.error.type || 'unknown error') + '. Please try again.';
+      errBox.style.display = 'block';
+      return;
+    }
+    if(data.stop_reason === 'max_tokens'){
+      console.warn('Response was truncated at max_tokens.');
+    }
+
+    var textBlock = (data.content || []).filter(function(b){ return b.type === 'text'; }).map(function(b){ return b.text; }).join('');
+    var clean = textBlock.replace(/```json|```/g, '').trim();
+    // Defensive: if there's any stray text around the JSON object, isolate it
+    var firstBrace = clean.indexOf('{');
+    var lastBrace = clean.lastIndexOf('}');
+    if(firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace){
+      clean = clean.slice(firstBrace, lastBrace + 1);
+    }
+    var parsed;
+    try{
+      parsed = JSON.parse(clean);
+    }catch(e){
+      console.error('JSON parse failed. Raw response:', textBlock);
+      var truncatedHint = (data.stop_reason === 'max_tokens') ? ' (response was cut off — try shortening the resume/JD, or this can happen on longer profiles)' : '';
+      errBox.textContent = 'Could not parse the evaluation' + truncatedHint + '. Try again, or simplify the input.';
+      errBox.style.display = 'block';
+      return;
+    }
+    resultData = parsed;
+    document.getElementById('panelbox').innerHTML = panelHTML(parsed);
+    current = 1;
+    resultBox.style.display = 'block';
+    render();
+    resultBox.scrollIntoView({behavior:'smooth'});
+  })
+  .catch(function(err){
+    loadingBox.style.display = 'none';
+    document.getElementById('evalBtn').disabled = false;
+    errBox.textContent = 'Something went wrong reaching the evaluator. Please try again.';
+    errBox.style.display = 'block';
+  });
+});
+</script>
+</body>
+</html>
