@@ -30,6 +30,25 @@ Evaluates a candidate once they've correctly reached screening. Six steps: under
 **Part 3 — The Live Evaluator** (`live-evaluator.html`)
 Same six-step flow as Part 2, but wired to a real AI model instead of scripted examples. Paste in any job description and any resume, and it generates a genuine, reasoned evaluation on the spot.
 
+## Quick Start
+
+No build step, no install, no dependencies. Everything here is plain HTML, CSS, and vanilla JavaScript.
+
+**Parts 1 & 2 — fully self-contained, works instantly:**
+1. Clone or download this repo
+2. Open `title-equivalence-demo.html` or `index.html` directly in any browser
+3. That's it — both run entirely client-side with fixed example data, no setup required
+
+**Part 3 — the live evaluator:**
+`live-evaluator.html` calls a real AI model to generate evaluations, so it needs an API key to run:
+
+1. Get a free Anthropic API key at [console.anthropic.com](https://console.anthropic.com) (pay-as-you-go, no subscription)
+2. Open `live-evaluator.html` in any browser — or visit it directly on the live site
+3. Paste your key into the "Your Anthropic API Key" field at the top — it's used only in your browser, sent only to Anthropic's API, and never touches any server of mine. It's saved in your browser's local storage so you don't have to re-enter it next time, but you can clear it anytime by clearing your browser data.
+4. Paste in any job description and any resume, hit **Evaluate against evidence, not keywords**, and step through the six tabs: Role → Resume → Evidence → Context → Verdict → Redirect
+
+Note: since this runs entirely in your browser with your own key, your usage is billed to your own Anthropic account under their standard API pricing.
+
 ## Part 3 in depth: stress-testing it
 
 Rather than trust the concept, I tried to break it — feeding it resumes specifically designed to fool a naive system in one direction or another.
@@ -70,13 +89,6 @@ Worth calling out on its own — it's the clearest evidence that adversarial tes
 ## Evidence Density
 
 Instead of "Keyword Match: 87%," the system surfaces something more falsifiable:
-
-```
-Behavior Match        92%
-Evidence Strength      88%
-Context Confidence     84%
-Learning Agility       90%
-```
 
 A claim like *"converted 3 of 10 pending renewals"* scores higher than *"improved renewals"* — not because it sounds better, but because one is falsifiable and the other is marketing.
 
